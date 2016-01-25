@@ -6,9 +6,9 @@ using DocumentFormat.OpenXml.Packaging;
 using DocumentFormat.OpenXml.Wordprocessing;
 using System.IO;
 
-namespace BLL_Disclosure_Forms._8point7_.OMNI
+namespace BLL_Disclosure_Forms
 {
-    public class NewDisclosureForm
+    public class CreateDisclosureForms
     {
         private static List<DAL_TOP_AM.Entities.Trade_OMNI> list = null;
         public static void Run()

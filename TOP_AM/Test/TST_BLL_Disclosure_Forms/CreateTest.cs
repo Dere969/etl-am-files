@@ -10,24 +10,11 @@ namespace TST_BLL_Disclosure_Forms
     public class CreateTest
     {
         [TestMethod]
-        public void RunningCreateTest()
+        public void CreateDisclosureFormsTest()
         {
             try
             {
-                BLL_Disclosure_Forms.CreateDouments.Run();
-            }
-            catch (Exception ex)
-            {
-                throw ex;
-            }
-        }
-
-        [TestMethod]
-        public void _8point7_()
-        {
-            try
-            {
-                BLL_Disclosure_Forms._8point7_.OMNI.NewDisclosureForm.Run();
+                BLL_Disclosure_Forms.CreateDisclosureForms.Run();
             }
             catch (Exception ex)
             {
