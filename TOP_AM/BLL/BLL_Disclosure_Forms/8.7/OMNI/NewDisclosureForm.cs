@@ -41,61 +41,61 @@ namespace BLL_Disclosure_Forms._8point7_.OMNI
                     case "efm":
                         TextIn.Text = "JPMorgan International Bank";
                         break;
-                    case "class":
-                        string sClass = string.Empty;
-                        for (Int32 i = 0; i < list.Count; i++)
-                        {
-                            if (i > 0)
-                                sClass += Environment.NewLine;
-                            sClass += "Ordinary Share";
-                        }
-                        TextIn.Text = sClass;
-                        break;
-                    case "purchaseorsale":
-                        string sPurchaseOrSale = string.Empty;
-                        for (Int32 i = 0; i < list.Count; i++)
-                        {
-                            if (i > 0)
-                                sPurchaseOrSale += Environment.NewLine;
-                            sPurchaseOrSale += list[i].PurchaseOrSale;
-                        }
-                        TextIn.Text = sPurchaseOrSale;
-                        break;
-                    case "numofsecurities":
-                        string sNumOfSecurities = string.Empty;
-                        for (Int32 i = 0; i < list.Count; i++)
-                        {
-                            if (i > 0)
-                                sNumOfSecurities += Environment.NewLine;
-                            sNumOfSecurities += list[i].NumOfSecurities;
-                        }
-                        TextIn.Text = sNumOfSecurities;
-                        break;
-                    case "price":
-                        string sPrice = string.Empty;
-                        for (Int32 i = 0; i < listPurchased.Count; i++)
-                        {
-                            if (sPrice.Length > 0)
-                                sPrice += Environment.NewLine;
-                            sPrice += listPurchased[i].Price.ToString("0.0000");
-                        }
-                        for (Int32 i = 0; i < listSales.Count; i++)
-                        {
-                            if (sPrice.Length > 0)
-                                sPrice += Environment.NewLine;
-                            sPrice += listSales[i].Price.ToString("0.0000");
-                        }
-                        TextIn.Text = sPrice;
-                        break;
-                    case "totalclass":                        
-                        TextIn.Text = "Ordinary Share";
-                        break;
-                    case "totalpurchased":
-                        TextIn.Text = listPurchased.Count.ToString();
-                        break;
-                    case "totalsold":
-                         TextIn.Text = listSales.Count.ToString();
-                        break;
+                    //case "class":
+                    //    string sClass = string.Empty;
+                    //    for (Int32 i = 0; i < list.Count; i++)
+                    //    {
+                    //        if (i > 0)
+                    //            sClass += Environment.NewLine;
+                    //        sClass += "Ordinary Share";
+                    //    }
+                    //    TextIn.Text = sClass;
+                    //    break;
+                    //case "purchaseorsale":
+                    //    string sPurchaseOrSale = string.Empty;
+                    //    for (Int32 i = 0; i < list.Count; i++)
+                    //    {
+                    //        if (i > 0)
+                    //            sPurchaseOrSale += Environment.NewLine;
+                    //        sPurchaseOrSale += list[i].PurchaseOrSale;
+                    //    }
+                    //    TextIn.Text = sPurchaseOrSale;
+                    //    break;
+                    //case "numofsecurities":
+                    //    string sNumOfSecurities = string.Empty;
+                    //    for (Int32 i = 0; i < list.Count; i++)
+                    //    {
+                    //        if (i > 0)
+                    //            sNumOfSecurities += Environment.NewLine;
+                    //        sNumOfSecurities += list[i].NumOfSecurities;
+                    //    }
+                    //    TextIn.Text = sNumOfSecurities;
+                    //    break;
+                    //case "price":
+                    //    string sPrice = string.Empty;
+                    //    for (Int32 i = 0; i < listPurchased.Count; i++)
+                    //    {
+                    //        if (sPrice.Length > 0)
+                    //            sPrice += Environment.NewLine;
+                    //        sPrice += listPurchased[i].Price.ToString("0.0000");
+                    //    }
+                    //    for (Int32 i = 0; i < listSales.Count; i++)
+                    //    {
+                    //        if (sPrice.Length > 0)
+                    //            sPrice += Environment.NewLine;
+                    //        sPrice += listSales[i].Price.ToString("0.0000");
+                    //    }
+                    //    TextIn.Text = sPrice;
+                    //    break;
+                    //case "totalclass":                        
+                    //    TextIn.Text = "Ordinary Share";
+                    //    break;
+                    //case "totalpurchased":
+                    //    TextIn.Text = listPurchased.Count.ToString();
+                    //    break;
+                    //case "totalsold":
+                    //     TextIn.Text = listSales.Count.ToString();
+                    //    break;
                     case "dateofdisclosure":
                         TextIn.Text = DateTime.Now.Date.ToString("dd/mm/yyyy");
                         break;
@@ -129,7 +129,7 @@ namespace BLL_Disclosure_Forms._8point7_.OMNI
                     {
                         foreach (Text textsection in doc.MainDocumentPart.Document.Descendants<Text>())
                         {
-                            if (!textsection.InnerText.Contains("#"))
+                            if (!textsection.Text.Contains("#"))
                                 continue;
                             Text refText = textsection;                            
                             UpdateFields(ref refText);                            
