@@ -14,7 +14,7 @@ namespace TST_BLL_Disclosure_Forms
         {
             try
             {
-                BLL_Disclosure_Forms.CreateDisclosureForms.Run();
+                BLL_Disclosure_Forms.CreateDisclosureForms.Run();                
             }
             catch (Exception ex)
             {

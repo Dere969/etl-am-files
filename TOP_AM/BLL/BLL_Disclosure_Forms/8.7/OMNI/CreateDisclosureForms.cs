@@ -7,6 +7,10 @@ using DocumentFormat.OpenXml.Wordprocessing;
 using System.IO;
 using System.Text.RegularExpressions;
 
+using Word = Microsoft.Office.Interop.Word;
+using System.Reflection;
+using System.Runtime.InteropServices;
+
 namespace BLL_Disclosure_Forms
 {
     public class CreateDisclosureForms
@@ -25,7 +29,7 @@ namespace BLL_Disclosure_Forms
             try
             {
 
-                list            = DAL_TOP_AM.Factory.OMNI.FileFactory.Select().OrderBy(x => x.PurchaseOrSale).OrderBy(x => x.Price).ToList();
+                list            = DAL_TOP_AM.Factory.OMNI.FileFactory.Select().OrderBy(x => x.PurchaseOrSale).ThenBy(x => x.Price).ToList();
                 listPurchased   = list.Where(x => x.PurchaseOrSale.ToLower() == "purchase").ToList().OrderBy(x => x.Price).ToList();
                 listSales       = list.Where(x => x.PurchaseOrSale.ToLower() == "sale").ToList().OrderBy(x => x.Price).ToList(); 
                
@@ -85,7 +89,7 @@ namespace BLL_Disclosure_Forms
                 for (Int32 i = 0; i < list.Count; i++)
                 {
                     if (i > 0)
-                        tNewText += "<w:br/>";
+                        tNewText += "\v";
                     tNewText += "Ordinary Share";
                 }
 
@@ -109,7 +113,7 @@ namespace BLL_Disclosure_Forms
                 for (Int32 i = 0; i < list.Count; i++)
                 {
                     if (i > 0)
-                        tNewText += "<w:br/>";//Environment.NewLine;
+                        tNewText += "\v";//Environment.NewLine;
                     tNewText += list[i].PurchaseOrSale;
                 }
 
@@ -133,8 +137,8 @@ namespace BLL_Disclosure_Forms
                 for (Int32 i = 0; i < list.Count; i++)
                 {
                     if (i > 0)
-                        tNewText += "<w:br/>";//Environment.NewLine;
-                    tNewText += list[i].NumOfSecurities;
+                        tNewText += "\v";//Environment.NewLine;
+                    tNewText += list[i].NumOfSecurities.ToString("###,###,###,###");
                 }
 
                 Int32 tExpectedReplaceCount = 1;
@@ -157,14 +161,16 @@ namespace BLL_Disclosure_Forms
                 for (Int32 i = 0; i < listPurchased.Count; i++)
                 {
                     if (tNewText.Length > 0)
-                        tNewText += "<w:br/>";//Environment.NewLine;
+                        tNewText += "\v";//Environment.NewLine;
                     tNewText += listPurchased[i].Price.ToString("0.0000");
+                    tNewText += " " + listPurchased[i].CCY;
                 }
                 for (Int32 i = 0; i < listSales.Count; i++)
                 {
                     if (tNewText.Length > 0)
-                        tNewText += "<w:br/>";//Environment.NewLine;
+                        tNewText += "\v";//Environment.NewLine;
                     tNewText += listSales[i].Price.ToString("0.0000");
+                    tNewText += " " + listSales[i].CCY;
                 }
 
                 Int32 tExpectedReplaceCount = 1;
@@ -182,8 +188,14 @@ namespace BLL_Disclosure_Forms
         {
             try
             {
+                Int32 tTotal = 0;
+                for (Int32 i = 0; i < listPurchased.Count; i++)
+                {
+                    tTotal += listPurchased[i].NumOfSecurities;
+                }
+
                 string tFindTag              = "#TotalPurchased#";
-                string tNewText              = listPurchased.Count.ToString();
+                string tNewText              = tTotal.ToString("###,###,###,###");
                 Int32  tExpectedReplaceCount = 1;
 
                 ReplaceText(ref TextIn, tFindTag, tNewText, tExpectedReplaceCount); 
@@ -199,8 +211,14 @@ namespace BLL_Disclosure_Forms
         {
             try
             {
+                Int32 tTotal = 0;
+                for (Int32 i = 0; i < listSales.Count; i++)
+                {
+                    tTotal += listSales[i].NumOfSecurities;
+                }
+
                 string tFindTag              = "#TotalSold#";
-                string tNewText              = listSales.Count.ToString();
+                string tNewText              = tTotal.ToString("###,###,###,###");
                 Int32  tExpectedReplaceCount = 1;
 
                 ReplaceText(ref TextIn, tFindTag, tNewText, tExpectedReplaceCount); 
@@ -234,7 +252,7 @@ namespace BLL_Disclosure_Forms
             try
             {
                 string tFindTag              = "#dateofdisclosure#";
-                string tNewText              = DateTime.Now.Date.ToString("dd/mm/yyyy");
+                string tNewText              = DateTime.Now.Date.ToString("dd/MM/yyyy");
                 Int32  tExpectedReplaceCount = 1;
 
                 ReplaceText(ref TextIn, tFindTag, tNewText, tExpectedReplaceCount); 
@@ -333,13 +351,13 @@ namespace BLL_Disclosure_Forms
         }
 
         #region Methods.Helper
-
-        private static void Run(List<DAL_TOP_AM.Entities.Trade_OMNI> ListIn)
+        private static Body body = null;
+        private static void Runxx(List<DAL_TOP_AM.Entities.Trade_OMNI> ListIn)
         {
             try
             {
                 string FileName     = string.Format("{0}\\{1}", Constants.cRootDisclosurePath, Constants.cFileNameTemplateForm8point7);               
-                string NewFIleName  = string.Format("{0}\\{1:yyyy_MM_dd_HH_mm_ss_fff}-{2}", Constants.cRootDisclosurePath, DateTime.Now, "8.7.docx");
+                string NewFIleName  = string.Format("{0}\\{1:yyyy_MM_dd_HH_mm_ss_fff}-{2}", Constants.cRootDisclosurePath, DateTime.Now, "8.7.doc");
                 string docText = null;
 
                 File.Copy(FileName, NewFIleName);
@@ -350,7 +368,9 @@ namespace BLL_Disclosure_Forms
                     {
                         docText = sr.ReadToEnd();
                     }
+                    //Paragraph v= doc.MainDocumentPart.Document.Descendants<Paragraph>();
 
+                    //WordTools.ReplaceText((Paragraph)body, "#TotalPurchased#", "3");
                     UpdateFields(ref docText);
 
                     //docText = docText.Replace(Environment.NewLine, "\v");
@@ -382,17 +402,97 @@ namespace BLL_Disclosure_Forms
             }
         }
 
+        private static Word.Document _msdoc = null;
+        private static object o = Missing.Value;
+        private static object oFalse = false;
+        private object oTrue = true;
+         private static void Run(List<DAL_TOP_AM.Entities.Trade_OMNI> ListIn)
+        {
+            try
+            {
+                string FileName     = string.Format("{0}\\{1}", Constants.cRootDisclosurePath, Constants.cFileNameTemplateForm8point7);               
+                string NewFIleName  = string.Format("{0}\\{1:yyyy_MM_dd_HH_mm_ss_fff}-{2}", Constants.cRootDisclosurePath, DateTime.Now, "8.7.doc");
+                string docText = null;
+
+                File.Copy(FileName, NewFIleName);
+            
+                object o = Missing.Value;
+                object oFalse = false;
+                object oTrue = true;
+
+                Word._Application app = null;
+                Word.Documents docs = null;
+                Word.Document doc = null;
+
+                object path = NewFIleName;
+
+                try
+                {
+                    app = new Word.Application();
+                    app.Visible = false;
+                    app.DisplayAlerts = Word.WdAlertLevel.wdAlertsNone;
+
+                    docs = app.Documents;
+                    doc = docs.Open(ref path, ref o, ref o, ref o, ref o, ref o, ref o, ref o, ref o, ref o, ref o, ref o, ref o, ref o, ref o, ref o);
+                    doc.Activate();
+
+                    _msdoc = doc;
+
+                    string s = "";
+                    UpdateFields(ref s);
+                    
+                    doc.Save();
+                    ((Word._Document)doc).Close(ref o, ref o, ref o);
+                    app.Quit(ref o, ref o, ref o);
+                }
+                finally
+                {
+                    if (doc != null)
+                        Marshal.FinalReleaseComObject(doc);
+
+                    if (docs != null)
+                        Marshal.FinalReleaseComObject(docs);
+
+                    if (app != null)
+                        Marshal.FinalReleaseComObject(app);
+                }
+            }
+            catch (Exception ex)
+            {
+                DAL_TOP_AM.Factory.LogEntry.InsertFactory.Insert(ex.Message, ex.StackTrace);
+                throw ex;
+            }
+        }
+
         private static void ReplaceText(ref string TextIn, string FindTextIn, string ReplaceTextIn, Nullable<Int32> ExpectedReplaceCount)
         {
             try
             {
-                Regex regexText = new Regex(FindTextIn);
-                MatchCollection mCollection = regexText.Matches(TextIn);
 
-                if (ExpectedReplaceCount.HasValue && mCollection.Count != ExpectedReplaceCount.Value)
-                    throw new ApplicationException(string.Format("Error Cannot Find Text '{0}': Expected Count {1}. Actual {2}. (ReplaceTagText)", FindTextIn, ExpectedReplaceCount, mCollection.Count));
+                foreach (Word.Range range in _msdoc.StoryRanges)
+                    {
+                        Word.Find find = range.Find;
+                        object findText = FindTextIn;
+                        object replacText = ReplaceTextIn;
+                        object replace = Word.WdReplace.wdReplaceAll;
+                        object findWrap = Word.WdFindWrap.wdFindContinue;
 
-                TextIn = regexText.Replace(TextIn, ReplaceTextIn);
+                        find.Execute(ref findText, ref o, ref o, ref o, ref oFalse, ref o,
+                            ref o, ref findWrap, ref o, ref replacText,
+                            ref replace, ref o, ref o, ref o, ref o);
+
+                        Marshal.FinalReleaseComObject(find);
+                        Marshal.FinalReleaseComObject(range);
+                    }
+
+
+                //Regex regexText = new Regex(FindTextIn);
+                //MatchCollection mCollection = regexText.Matches(TextIn);
+
+                //if (ExpectedReplaceCount.HasValue && mCollection.Count != ExpectedReplaceCount.Value)
+                //    throw new ApplicationException(string.Format("Error Cannot Find Text '{0}': Expected Count {1}. Actual {2}. (ReplaceTagText)", FindTextIn, ExpectedReplaceCount, mCollection.Count));
+
+                //TextIn = regexText.Replace(TextIn, ReplaceTextIn);
 
             }
             catch (Exception ex)
