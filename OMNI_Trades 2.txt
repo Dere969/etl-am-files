@@ -1,5 +1,0 @@
-PurchaseOrSale,NumOfSecurities,Price,CCY
-Purchase,53020,21.6555536,GBP
-Purchase,2034,20.63,GBP
-Purchase,3020,23.5455536,GBP
-Sale,500,19.6555,GBP
